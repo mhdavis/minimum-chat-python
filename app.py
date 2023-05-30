@@ -3,8 +3,8 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 todos = [
-    {'id': 1, 'task': 'Do laundry', 'complete': False},
-    {'id': 2, 'task': 'Buy groceries', 'complete': True},
+    {'id': 0, 'task': 'Do laundry', 'complete': False},
+    {'id': 1, 'task': 'Buy groceries', 'complete': True},
     # more todos...
 ]
 
@@ -20,7 +20,7 @@ def get_todos():
 def add_todo():
     todo = request.get_json()
     todos.append(todo)
-    return '', 200
+    return todo, 200
 
 @app.route('/todos/<int:index>', methods=['PUT'])
 def update_todo(index):
