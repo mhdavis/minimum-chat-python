@@ -1,11 +1,11 @@
 from flask import Flask
-from .main.routes import main
-from .users.routes import users 
-from .messages.routes import messages
+from .main import main
+from .users import users 
+from .messages import messages
 
 def create_app():
-    app.config.from_object('app.config.Config')
     app = Flask(__name__)
+    app.config.from_object('config.Config')
 
     # Register the users blueprint
     app.register_blueprint(main)

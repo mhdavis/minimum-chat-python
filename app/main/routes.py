@@ -1,6 +1,4 @@
-from flask import Flask, request, jsonify
-
-main = Flask(__name__)
+from . import main
 
 @main.route('/')
 def home():
