@@ -1,49 +1,58 @@
-from . import users
-from flask import request, jsonify
+from flask import Blueprint, request, jsonify
+from app.models.database import db
+from app.models.user import User
+from datetime import datetime
 
-# TODO: replace with Database
-users_db = {
-    1: {
-        'id': 1, 
-        'firstName': 'Annie',
-        'lastName': 'Baker',
-        'username': 'abaker',
-        'dateTimeCreated':  1234567890,
-        },
-    2: {
-        'id': 2, 
-        'firstName': 'John',
-        'lastName': 'Smith',
-        'username': 'jsmith',
-        'dateTimeCreated':  1234567890,
-        },
-    # more users...
-}
+users = Blueprint('users', __name__)
 
 @users.route('/users', methods=['GET'])
 def get_users():
-    return jsonify(users_db)
+    all_users = User.query.all()
+    return jsonify([user.to_dict() for user in all_users]), 200
+
+@users.route('/users/<int:id>', methods=['GET'])
+def get_user(id):
+    user = User.query.get(id)
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
+    else:
+        return jsonify(user.to_dict()), 200
 
 @users.route('/users', methods=['POST'])
-def add_user():
-    user = request.get_json()
-    users_db[user['id']] = user
-    return user, 200
+def create_user():
+    data = request.get_json()
+    new_user = User(
+        first_name=data['first_name'], 
+        last_name=data['last_name'], 
+        username=data['username'], 
+        email=data['email'], 
+        password=data['password']
+    )
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"message": f"User {new_user.id} created successfully!"}), 201
 
 @users.route('/users/<int:id>', methods=['PUT'])
 def update_user(id):
-    message = request.get_json()
-    
-    if id in users_db:
-        users_db[id] = message
-        return '', 204
+    user = User.query.get(id)
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
     else:
-        return f"User with id {id} not found.", 404
+        data = request.get_json()
+        user.first_name = data.get('first_name', user.first_name)
+        user.last_name = data.get('last_name', user.last_name)
+        user.username = data.get('username', user.username)
+        user.email = data.get('email', user.email)
+        timestamp_created = datetime.utcnow()
+        db.session.commit()
+        return jsonify({"message": f"User {user.id} updated successfully!"}), 200
 
-@users.route('/user/<int:id>', methods=['DELETE'])
+@users.route('/users/<int:id>', methods=['DELETE'])
 def delete_user(id):
-    if id in users_db:
-        del users_db[id]
-        return '', 204
+    user = User.query.get(id)
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
     else:
-        return f"User with id {id} not found.", 404
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({"message": f"User {user.id} deleted successfully!"}), 200
