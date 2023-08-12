@@ -43,7 +43,7 @@ def update_user(id):
         user.last_name = data.get('last_name', user.last_name)
         user.username = data.get('username', user.username)
         user.email = data.get('email', user.email)
-        timestamp_created = datetime.utcnow()
+        user.timestamp_created = datetime.utcnow()
         db.session.commit()
         return jsonify({"message": f"User {user.id} updated successfully!"}), 200
 

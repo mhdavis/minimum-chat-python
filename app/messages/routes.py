@@ -18,7 +18,7 @@ def get_message(id):
     else:
         return jsonify(message.to_dict()), 200 
 
-@messages.route('/messages', method=['POST'])
+@messages.route('/messages', methods=['POST'])
 def add_message():
     data = request.get_json()
     new_message = Message(
@@ -44,7 +44,7 @@ def update_message(id):
         db.session.commit()
         return jsonify({"message": f"fMessage {message.id} updated successfully!"}), 200
 
-@messages.route('messages/<int:id>', methods=['DELETE'])
+@messages.route('/messages/<int:id>', methods=['DELETE'])
 def delete_message(id):
     message = Message.query.get(id)
     if message is None:
