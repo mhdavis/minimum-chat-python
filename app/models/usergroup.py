@@ -1,23 +1,22 @@
 from datetime import datetime
-from app.models.database import db
-from app.models.user import User
+from sqlalchemy import Column, Integer, String, DateTime, Table, ForeignKey
+from sqlalchemy.orm import relationship
+from app.database import Base
 
-# Many-to-Many relation between User and UserGroup
-user_group_association = db.Table('user_group_association',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('group_id', db.Integer, db.ForeignKey('user_group.id'))
+user_group_association = Table('user_group_association', Base.metadata,
+   Column('user_id', Integer, ForeignKey('users.id')),
+   Column('group_id', Integer, ForeignKey('user_groups.id'))
 )
 
-class UserGroup(db.Model):
-    __tablename__ = 'user_group'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), nullable=False)
-    description = db.Column(db.String(256), nullable=True)
-    timestamp_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    
-    # Establishing the many-to-many relationship with User model
-    members = db.relationship('User', secondary=user_group_association, backref=db.backref('groups', lazy='dynamic'))
+class UserGroup(Base):
+   __tablename__ = 'user_groups'
 
-    def __repr__(self):
-        return '<UserGroup: {}>'.format(self.name)
+   id = Column(Integer, primary_key=True)
+   name = Column(String(128), nullable=False)
+   description = Column(String(256), nullable=True)
+   timestamp_created = Column(DateTime, nullable=False, default=datetime.utcnow)
+   
+   members = relationship('User', secondary=user_group_association, backref='groups')
+
+   def __repr__(self):
+       return f'<UserGroup: {self.name}>'

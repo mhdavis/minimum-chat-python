@@ -1,36 +1,26 @@
 from datetime import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
-from database import db;
+from sqlalchemy import Column, Integer, String, DateTime
+from passlib.context import CryptContext
+from app.database import Base
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True, unique=True)
-    first_name = db.Column(db.String(500), nullable=False)
-    last_name = db.Column(db.String(500), nullable=False)
-    username = db.Column(db.String(64), nullable=False, unique=True)
-    email=db.Column(db.String(120), nullable=False, unique=True)
-    timestamp_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    password_hash = db.Column(db.String(128))
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    @property
-    def password(self):
-        raise AttributeError('password is not a readable attribute')
+class User(Base):
+    __tablename__ = 'users'
 
-    @password.setter
-    def password(self, password):
-        self.password_hash = generate_password_hash(password)
+    id = Column(Integer, primary_key=True, unique=True)
+    first_name = Column(String(500), nullable=False)
+    last_name = Column(String(500), nullable=False)
+    username = Column(String(64), nullable=False, unique=True)
+    email = Column(String(120), nullable=False, unique=True)
+    timestamp_created = Column(DateTime, nullable=False, default=datetime.utcnow)
+    password_hash = Column(String(128))
+
+    def set_password(self, password):
+        self.password_hash = pwd_context.hash(password)
 
     def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'username': self.username,
-            'email': self.email,
-            'timestamp_created': self.timestamp_created,
-        }
+        return pwd_context.verify(password, self.password_hash)
 
     def __repr__(self):
-        return '<User {}>'.format(self.username)  
+        return f'<User {self.username}>'
