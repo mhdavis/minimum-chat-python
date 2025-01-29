@@ -6,7 +6,11 @@ from app.conversations.router import router as conversations_router
 from app.messages.router import router as messages_router
 from app.usergroups.router import router as usergroups_router
 
-app = FastAPI()
+app = FastAPI(
+    title="Minimum Chat App API",
+    description="API for a minimum chat application that supports user managemnt and messaging.",
+    version="0.1.0"
+)
 
 # CORS middleware
 app.add_middleware(
